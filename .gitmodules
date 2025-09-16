@@ -1,0 +1,6 @@
+[submodule "eFrotas"]
+	path = eFrotas
+	url = https://github.com/WS-Solucoes/eFrotas.git
+[submodule "eRH-Service"]
+	path = eRH-Service
+	url = https://github.com/WS-Solucoes/eRH-Service.git
