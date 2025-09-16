@@ -4,3 +4,9 @@
 [submodule "eRH-Service"]
 	path = eRH-Service
 	url = https://github.com/WS-Solucoes/eRH-Service.git
+[submodule "frontend-services"]
+	path = frontend-services
+	url = https://github.com/WS-Solucoes/frontend-services.git
+[submodule "common"]
+	path = common
+	url = https://github.com/WS-Solucoes/common.git

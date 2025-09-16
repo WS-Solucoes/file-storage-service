@@ -1,2 +1,2 @@
-# WS-Services
-Repo de todos serviços
+# eFrotas
+Sistema de gestão de frotas
