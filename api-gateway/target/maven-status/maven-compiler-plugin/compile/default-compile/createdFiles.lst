@@ -1,0 +1,4 @@
+ws\gateway\ApiGatewayApplication.class
+ws\gateway\config\SecurityConfig.class
+ws\gateway\filter\AuthenticationFilter.class
+ws\gateway\config\GatewayConfig.class
