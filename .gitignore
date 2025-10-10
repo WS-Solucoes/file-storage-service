@@ -28,3 +28,9 @@ replay_pid*
 frontend/.env
 .frontend/.env.local
 frontend/.env.local
+
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+!**/src/main/**/target/
+!**/src/test/**/target/
