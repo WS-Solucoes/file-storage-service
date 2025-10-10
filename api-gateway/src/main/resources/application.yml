@@ -21,6 +21,7 @@ spring:
         - RemoveResponseHeader=Proxy-Authenticate
         - RemoveResponseHeader=Proxy-Authorization
         - RemoveResponseHeader=Upgrade
+        - "DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials Access-Control-Allow-Headers Access-Control-Allow-Methods Access-Control-Expose-Headers RETAIN_FIRST"
       discovery:
         locator:
           enabled: false
