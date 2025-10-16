@@ -1,0 +1,26 @@
+server:
+  port: ${DISCOVERY_SERVER_PORT:8761}
+
+spring:
+  application:
+    name: service-discovery
+  main:
+    banner-mode: "off"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.springframework.cloud.netflix.eureka: INFO
+    com.netflix: WARN
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    eviction-interval-timer-in-ms: 5000

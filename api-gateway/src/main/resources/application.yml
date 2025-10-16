@@ -1,0 +1,69 @@
+server:
+  port: ${API_GATEWAY_PORT:8080}
+
+spring:
+  application:
+    name: api-gateway
+  main:
+    web-application-type: reactive
+  cloud:
+    gateway:
+      default-filters:
+        - RemoveRequestHeader=Connection
+        - RemoveRequestHeader=Keep-Alive
+        - RemoveRequestHeader=Transfer-Encoding
+        - RemoveRequestHeader=Proxy-Authenticate
+        - RemoveRequestHeader=Proxy-Authorization
+        - RemoveRequestHeader=Upgrade
+        - RemoveResponseHeader=Connection
+        - RemoveResponseHeader=Keep-Alive
+        - RemoveResponseHeader=Transfer-Encoding
+        - RemoveResponseHeader=Proxy-Authenticate
+        - RemoveResponseHeader=Proxy-Authorization
+        - RemoveResponseHeader=Upgrade
+        - "DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials Access-Control-Allow-Headers Access-Control-Allow-Methods Access-Control-Expose-Headers RETAIN_FIRST"
+      discovery:
+        locator:
+          enabled: false
+      routes:
+        - id: auth-service
+          uri: lb://common-service
+          predicates:
+            - Path=/api/auth/**
+        - id: frotas-service
+          uri: lb://frotas-service
+          predicates:
+            - Path=/frotas/**
+          filters:
+            - StripPrefix=1
+        - id: erh-service
+          uri: lb://erh-service
+          predicates:
+            - Path=/erh/**
+          filters:
+            - StripPrefix=1
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "${WS_GATEWAY_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200}"
+            allowed-methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+            allowed-headers: "*"
+            allow-credentials: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty.http.client: WARN
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
