@@ -24,10 +24,7 @@
 hs_err_pid*
 replay_pid*
 
-.frontend/.env
-frontend/.env
-.frontend/.env.local
-frontend/.env.local
+
 
 **/build/
 **/target/

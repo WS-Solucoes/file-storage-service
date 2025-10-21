@@ -30,6 +30,12 @@ spring:
           uri: lb://common-service
           predicates:
             - Path=/api/auth/**
+        - id: common-service
+          uri: lb://common-service
+          predicates:
+            - Path=/common/**
+          filters:
+            - StripPrefix=1
         - id: frotas-service
           uri: lb://frotas-service
           predicates:
@@ -45,7 +51,7 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowed-origins: "${WS_GATEWAY_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200}"
+            allowed-origins: "${WS_GATEWAY_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:9300,https://wsolucoes.com}"
             allowed-methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
             allowed-headers: "*"
             allow-credentials: true
