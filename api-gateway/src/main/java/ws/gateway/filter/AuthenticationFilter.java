@@ -25,6 +25,9 @@ import reactor.core.publisher.Mono;
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+    private static final List<String> PUBLIC_UNIDADE_GESTORA_PATTERNS = List.of(
+            "/common/api/v1/unidadeGestora/**",
+            "/common/api/v1/unidadeGestora/municipio/**");
 
     private final WebClient authClient;
 
@@ -86,6 +89,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isUnsecuredPath(String path) {
-        return unsecuredPatterns.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
+        return unsecuredPatterns.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path))
+                || PUBLIC_UNIDADE_GESTORA_PATTERNS.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
     }
 }
