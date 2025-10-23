@@ -46,6 +46,9 @@ services:
       SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://postgres:5432/frotas
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
       COMMON_ALLOWED_ORIGINS: http://srv752535.hstgr.cloud:9300,http://localhost:9300,https://srv752535.hstgr.cloud
+      SPRING_CLOUD_CLIENT_HOSTNAME: common
+      EUREKA_INSTANCE_HOSTNAME: common
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
     depends_on:
       - service-discovery
       
@@ -69,6 +72,9 @@ services:
       SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://postgres:5432/frotas
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
       EFROTAS_ALLOWED_ORIGINS: http://srv752535.hstgr.cloud:9300,http://localhost:9300,https://srv752535.hstgr.cloud
+      SPRING_CLOUD_CLIENT_HOSTNAME: efrotas-api-v2
+      EUREKA_INSTANCE_HOSTNAME: efrotas-api-v2
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
     depends_on:
       - common
 
@@ -95,6 +101,9 @@ services:
       SPRING_DATASOURCE_ERH_HIKARI_JDBC_URL: jdbc:postgresql://postgres:5432/erh
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
       ERH_ALLOWED_ORIGINS: http://srv752535.hstgr.cloud:9300,http://localhost:9300,https://srv752535.hstgr.cloud
+      SPRING_CLOUD_CLIENT_HOSTNAME: erh-api
+      EUREKA_INSTANCE_HOSTNAME: erh-api
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
     depends_on:
       - common
 
@@ -112,6 +121,9 @@ services:
       API_GATEWAY_PORT: 9080
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
       WS_GATEWAY_ALLOWED_ORIGINS: http://localhost:9300,http://localhost:3000,http://srv752535.hstgr.cloud:9300
+      SPRING_CLOUD_CLIENT_HOSTNAME: api-gateway
+      EUREKA_INSTANCE_HOSTNAME: api-gateway
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
     depends_on:
       - efrotas-api
       - erh-api
