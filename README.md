@@ -61,6 +61,8 @@ git clone <URL_DO_REPOSITORIO_WS_SERVICES>
 cd WS-Services
 git submodule init
 git submodule update --recursive
+git submodule foreach "git checkout main"
+git submodule foreach "git pull"
 ```
 
 ## Build e Execução dos Serviços
