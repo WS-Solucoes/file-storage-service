@@ -67,8 +67,14 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
         String token = authorizationHeaders.get(0);
 
+        // Identifica o módulo baseado no path da requisição
+        String moduloAlvo = identificarModulo(path);
+
         return authClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/api/auth/validate").build())
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/auth/validate")
+                        .queryParam("modulo", moduloAlvo)
+                        .build())
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .retrieve()
                 .toBodilessEntity()
@@ -86,6 +92,16 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                     exchange.getResponse().setStatusCode(HttpStatus.SERVICE_UNAVAILABLE);
                     return exchange.getResponse().setComplete();
                 });
+    }
+
+    /** Identifica o módulo (ERH ou FROTAS) baseado no path da requisição */
+    private String identificarModulo(String path) {
+        if (path.startsWith("/erh") || path.startsWith("/e-rh")) {
+            return "ERH";
+        } else if (path.startsWith("/frotas") || path.startsWith("/e-frotas")) {
+            return "FROTAS";
+        }
+        return "LEGACY"; // fallback para compatibilidade
     }
 
     private boolean isUnsecuredPath(String path) {
