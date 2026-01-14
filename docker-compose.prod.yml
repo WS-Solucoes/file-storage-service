@@ -97,7 +97,7 @@ services:
     labels:
       - "traefik.enable=true"
       # Rota para as APIs (ex: wsolucoes.com/api/v1/...)
-      - "traefik.http.routers.ws-gateway.rule=Host(`wsolucoes.com`) && PathPrefix(`/api`, `/auth`)"
+      - "traefik.http.routers.ws-gateway.rule=Host(`wsolucoes.com`) && PathPrefix(`/api/auth`, `/frotas`, `/erh`, `/common`)"
       - "traefik.http.routers.ws-gateway.entrypoints=websecure"
       - "traefik.http.routers.ws-gateway.tls=true"
       - "traefik.http.routers.ws-gateway.tls.certresolver=letsencrypt"
