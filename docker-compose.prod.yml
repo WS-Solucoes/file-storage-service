@@ -67,18 +67,17 @@ services:
       - ws_network
       - rede_deploy
     environment:
-      ERH_SERVER_PORT: 9083
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/frotas
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_DATASOURCE_ERH_URL: jdbc:postgresql://postgres:5432/erh
-      SPRING_DATASOURCE_ERH_USERNAME: postgres
-      SPRING_DATASOURCE_ERH_PASSWORD: ${POSTGRES_PASSWORD}
-      EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-      ERH_ALLOWED_ORIGINS: "https://wsolucoes.com"
-      SPRING_CLOUD_CLIENT_HOSTNAME: erh-api
-      EUREKA_INSTANCE_HOSTNAME: erh-api
-      JAVA_OPTS=-DDB_HOST: postgres -Dspring.datasource.url=jdbc:postgresql://postgres:5432/frotas -Derh.datasource.url=jdbc:postgresql://postgres:5432/erh
+      - ERH_SERVER_PORT=9083
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASS=oCV36=?CT97
+      - EUREKA_SERVER_URL=http://service-discovery:9876/eureka
+      - ERH_ALLOWED_ORIGINS=https://wsolucoes.com
+      - SPRING_CLOUD_CLIENT_HOSTNAME=erh-api
+      - EUREKA_INSTANCE_HOSTNAME=erh-api
+      # CORREÇÃO DEFINITIVA: Sobrescrevendo exatamente as chaves que o ErhDataSourceConfig usa
+      - JAVA_OPTS=-DDB_HOST=postgres -Dspring.datasource.url=jdbc:postgresql://postgres:5432/frotas -Dspring.datasource.hikari.jdbc-url=jdbc:postgresql://postgres:5432/frotas -Dspring.datasource.erh.url=jdbc:postgresql://postgres:5432/erh -Dspring.datasource.erh.hikari.jdbc-url=jdbc:postgresql://postgres:5432/erh
 
   api-gateway:
     build:
