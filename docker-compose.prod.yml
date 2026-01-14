@@ -3,15 +3,10 @@ version: "3.9"
 networks:
   ws_network:
     driver: bridge
-  rede_deploy: # <-- MUDANÇA: Declaramos a rede externa
+  rede_deploy:
     external: true
 
-# volumes:
-#   postgres_data:
-
 services:
-  
-
   service-discovery:
     build:
       context: .
@@ -20,12 +15,9 @@ services:
     restart: unless-stopped
     networks:
       - ws_network
-    ports:
-      - "9876:9876"
     environment:
       DISCOVERY_SERVER_PORT: 9876
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-    
 
   common:
     build:
@@ -36,22 +28,15 @@ services:
     networks:
       - ws_network
       - rede_deploy
-    ports:
-      - "9081:9081"
     environment:
       COMMON_SERVER_PORT: 9081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/frotas
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://postgres:5432/frotas
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-      COMMON_ALLOWED_ORIGINS: http://srv752535.hstgr.cloud:9300,http://localhost:9300,https://srv752535.hstgr.cloud
+      COMMON_ALLOWED_ORIGINS: "https://wsolucoes.com"
       SPRING_CLOUD_CLIENT_HOSTNAME: common
       EUREKA_INSTANCE_HOSTNAME: common
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
-    depends_on:
-      - service-discovery
-      
 
   efrotas-api:
     build:
@@ -62,21 +47,15 @@ services:
     networks:
       - ws_network
       - rede_deploy
-    ports:
-      - "9082:9082"
     environment:
       EFROTAS_SERVER_PORT: 9082
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/frotas
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://postgres:5432/frotas
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-      EFROTAS_ALLOWED_ORIGINS: http://srv752535.hstgr.cloud:9300,http://localhost:9300,https://srv752535.hstgr.cloud
+      EFROTAS_ALLOWED_ORIGINS: "https://wsolucoes.com"
       SPRING_CLOUD_CLIENT_HOSTNAME: efrotas-api-v2
       EUREKA_INSTANCE_HOSTNAME: efrotas-api-v2
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
-    depends_on:
-      - common
 
   erh-api:
     build:
@@ -87,8 +66,6 @@ services:
     networks:
       - ws_network
       - rede_deploy
-    ports:
-      - "9083:9083"
     environment:
       ERH_SERVER_PORT: 9083
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/frotas
@@ -97,15 +74,10 @@ services:
       SPRING_DATASOURCE_ERH_URL: jdbc:postgresql://postgres:5432/erh
       SPRING_DATASOURCE_ERH_USERNAME: postgres
       SPRING_DATASOURCE_ERH_PASSWORD: ${POSTGRES_PASSWORD}
-      SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://postgres:5432/frotas
-      SPRING_DATASOURCE_ERH_HIKARI_JDBC_URL: jdbc:postgresql://postgres:5432/erh
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-      ERH_ALLOWED_ORIGINS: http://srv752535.hstgr.cloud:9300,http://localhost:9300,https://srv752535.hstgr.cloud
+      ERH_ALLOWED_ORIGINS: "https://wsolucoes.com"
       SPRING_CLOUD_CLIENT_HOSTNAME: erh-api
       EUREKA_INSTANCE_HOSTNAME: erh-api
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
-    depends_on:
-      - common
 
   api-gateway:
     build:
@@ -115,19 +87,21 @@ services:
     restart: unless-stopped
     networks:
       - ws_network
-    ports:
-      - "9080:9080"
+      - rede_deploy
     environment:
       API_GATEWAY_PORT: 9080
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-      WS_GATEWAY_ALLOWED_ORIGINS: http://localhost:9300,http://localhost:3000,http://srv752535.hstgr.cloud:9300
+      WS_GATEWAY_ALLOWED_ORIGINS: "https://wsolucoes.com"
       SPRING_CLOUD_CLIENT_HOSTNAME: api-gateway
       EUREKA_INSTANCE_HOSTNAME: api-gateway
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
-    depends_on:
-      - efrotas-api
-      - erh-api
-      - common
+    labels:
+      - "traefik.enable=true"
+      # Rota para as APIs (ex: wsolucoes.com/api/v1/...)
+      - "traefik.http.routers.ws-gateway.rule=Host(`wsolucoes.com`) && PathPrefix(`/api`, `/auth`)"
+      - "traefik.http.routers.ws-gateway.entrypoints=websecure"
+      - "traefik.http.routers.ws-gateway.tls=true"
+      - "traefik.http.routers.ws-gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ws-gateway.loadbalancer.server.port=9080"
 
   frontend:
     build:
@@ -137,15 +111,20 @@ services:
     restart: unless-stopped
     networks:
       - ws_network
-    ports:
-      - "9300:3000"
+      - rede_deploy
     environment:
-      NODE_ENV: production
-      NEXT_PUBLIC_GATEWAY_URL: http://srv752535.hstgr.cloud:9080
-      NEXT_PUBLIC_FROTAS_PREFIX: /frotas
-      NEXT_PUBLIC_ERH_PREFIX: /erh
-      NEXT_PUBLIC_API_PREFIX: /api/v1
-      NEXT_PUBLIC_AUTH_PREFIX: /api/auth
-     
-    depends_on:
-      - api-gateway
+      - NODE_ENV=production
+      # MUDANÇA: O frontend agora chama o domínio via HTTPS
+      - NEXT_PUBLIC_GATEWAY_URL=https://wsolucoes.com
+      - NEXT_PUBLIC_FROTAS_PREFIX=/frotas
+      - NEXT_PUBLIC_ERH_PREFIX=/erh
+      - NEXT_PUBLIC_API_PREFIX=/api/v1
+      - NEXT_PUBLIC_AUTH_PREFIX=/api/auth
+    labels:
+      - "traefik.enable=true"
+      # Rota para o Frontend (Raiz do domínio)
+      - "traefik.http.routers.ws-frontend.rule=Host(`wsolucoes.com`) || Host(`www.wsolucoes.com`)"
+      - "traefik.http.routers.ws-frontend.entrypoints=websecure"
+      - "traefik.http.routers.ws-frontend.tls=true"
+      - "traefik.http.routers.ws-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ws-frontend.loadbalancer.server.port=3000"
