@@ -69,15 +69,18 @@ services:
     environment:
       - ERH_SERVER_PORT=9083
       - DB_HOST=postgres
-      - DB_PORT=5432
       - DB_USER=postgres
       - DB_PASS=oCV36=?CT97
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/frotas
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=oCV36=?CT97
+      - SPRING_DATASOURCE_ERH_URL=jdbc:postgresql://postgres:5432/erh
       - EUREKA_SERVER_URL=http://service-discovery:9876/eureka
       - ERH_ALLOWED_ORIGINS=https://wsolucoes.com
       - SPRING_CLOUD_CLIENT_HOSTNAME=erh-api
       - EUREKA_INSTANCE_HOSTNAME=erh-api
-      # CORREÇÃO DEFINITIVA: Sobrescrevendo exatamente as chaves que o ErhDataSourceConfig usa
-      - JAVA_OPTS=-DDB_HOST=postgres -Dspring.datasource.url=jdbc:postgresql://postgres:5432/frotas -Dspring.datasource.hikari.jdbc-url=jdbc:postgresql://postgres:5432/frotas -Dspring.datasource.erh.url=jdbc:postgresql://postgres:5432/erh -Dspring.datasource.erh.hikari.jdbc-url=jdbc:postgresql://postgres:5432/erh
+      # AQUI ESTÁ A CHAVE: Senha explícita e nomes de propriedades corretos
+      - JAVA_OPTS=-Dspring.datasource.url=jdbc:postgresql://postgres:5432/frotas -Dspring.datasource.username=postgres -Dspring.datasource.password=oCV36=?CT97 -Dspring.datasource.erh.url=jdbc:postgresql://postgres:5432/erh -Dspring.datasource.erh.username=postgres -Dspring.datasource.erh.password=oCV36=?CT97
 
   api-gateway:
     build:
@@ -107,6 +110,12 @@ services:
     build:
       context: ./frontend-services
       dockerfile: Dockerfile
+      args: # ADICIONE ESTE BLOCO
+        - NEXT_PUBLIC_GATEWAY_URL=https://wsolucoes.com
+        - NEXT_PUBLIC_FROTAS_PREFIX=/frotas
+        - NEXT_PUBLIC_ERH_PREFIX=/erh
+        - NEXT_PUBLIC_API_PREFIX=/api/v1
+        - NEXT_PUBLIC_AUTH_PREFIX=/api/auth
     container_name: frontend
     restart: unless-stopped
     networks:
