@@ -78,6 +78,7 @@ services:
       ERH_ALLOWED_ORIGINS: "https://wsolucoes.com"
       SPRING_CLOUD_CLIENT_HOSTNAME: erh-api
       EUREKA_INSTANCE_HOSTNAME: erh-api
+      JAVA_OPTS=-DDB_HOST: postgres -Dspring.datasource.url=jdbc:postgresql://postgres:5432/frotas -Derh.datasource.url=jdbc:postgresql://postgres:5432/erh
 
   api-gateway:
     build:
