@@ -15,8 +15,6 @@ services:
     restart: unless-stopped
     networks:
       - ws_network
-    ports:
-      - "9876:9876"
     environment:
       DISCOVERY_SERVER_PORT: 9876
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
@@ -30,15 +28,13 @@ services:
     networks:
       - ws_network
       - rede_deploy
-    ports:
-      - "9081:9081"
     environment:
       COMMON_SERVER_PORT: 9081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/frotas
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: oCV36=?CT97
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-      COMMON_ALLOWED_ORIGINS: "https://wsolucoes.com,http://srv752535.hstgr.cloud:9080,http://srv752535.hstgr.cloud:3000"
+      COMMON_ALLOWED_ORIGINS: "https://wsolucoes.com"
       SPRING_CLOUD_CLIENT_HOSTNAME: common
       EUREKA_INSTANCE_HOSTNAME: common
 
@@ -51,15 +47,13 @@ services:
     networks:
       - ws_network
       - rede_deploy
-    ports:
-      - "9082:9082"
     environment:
       EFROTAS_SERVER_PORT: 9082
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/frotas
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: oCV36=?CT97
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-      EFROTAS_ALLOWED_ORIGINS: "https://wsolucoes.com,http://srv752535.hstgr.cloud:9080,http://srv752535.hstgr.cloud:3000"
+      EFROTAS_ALLOWED_ORIGINS: "https://wsolucoes.com"
       SPRING_CLOUD_CLIENT_HOSTNAME: efrotas-api-v2
       EUREKA_INSTANCE_HOSTNAME: efrotas-api-v2
 
@@ -72,8 +66,6 @@ services:
     networks:
       - ws_network
       - rede_deploy
-    ports:
-      - "9083:9083"
     environment:
       - ERH_SERVER_PORT=9083
       - DB_HOST=postgres
@@ -84,10 +76,9 @@ services:
       - SPRING_DATASOURCE_PASSWORD=oCV36=?CT97
       - SPRING_DATASOURCE_ERH_URL=jdbc:postgresql://postgres:5432/erh
       - EUREKA_SERVER_URL=http://service-discovery:9876/eureka
-      - ERH_ALLOWED_ORIGINS=https://wsolucoes.com,http://srv752535.hstgr.cloud:9080,http://srv752535.hstgr.cloud:3000
+      - ERH_ALLOWED_ORIGINS=https://wsolucoes.com
       - SPRING_CLOUD_CLIENT_HOSTNAME=erh-api
       - EUREKA_INSTANCE_HOSTNAME=erh-api
-      # IMPORTANTE: Re-adicionando os JAVA_OPTS que configuram os dois bancos
       - 'JAVA_OPTS=-Dspring.datasource.url=jdbc:postgresql://postgres:5432/frotas -Dspring.datasource.username=postgres -Dspring.datasource.password=oCV36=?CT97 -Dspring.datasource.erh.url=jdbc:postgresql://postgres:5432/erh -Dspring.datasource.erh.username=postgres -Dspring.datasource.erh.password=oCV36=?CT97'
 
   api-gateway:
@@ -99,23 +90,29 @@ services:
     networks:
       - ws_network
       - rede_deploy
-    ports:
-      - "9080:9080"
     environment:
       API_GATEWAY_PORT: 9080
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-      WS_GATEWAY_ALLOWED_ORIGINS: "https://wsolucoes.com,http://srv752535.hstgr.cloud:9080,http://srv752535.hstgr.cloud:3000"
+      WS_GATEWAY_ALLOWED_ORIGINS: "https://wsolucoes.com"
       SPRING_CLOUD_CLIENT_HOSTNAME: api-gateway
       EUREKA_INSTANCE_HOSTNAME: api-gateway
     labels:
-      - "traefik.enable=false"
+      - "traefik.enable=true"
+      # O Gateway agora captura todas as rotas de API em HTTPS
+      - "traefik.http.routers.ws-gateway.rule=Host(`wsolucoes.com`) && PathPrefix(`/api`, `/frotas`, `/erh`, `/common`)"
+      - "traefik.http.routers.ws-gateway.entrypoints=websecure"
+      - "traefik.http.routers.ws-gateway.tls=true"
+      - "traefik.http.routers.ws-gateway.tls.certresolver=letsencrypt"
+      - "traefik.http.services.ws-gateway.loadbalancer.server.port=9080"
+      - "traefik.http.routers.ws-gateway.priority=100"
 
   frontend:
     build:
       context: ./frontend-services
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_GATEWAY_URL=http://srv752535.hstgr.cloud:9080
+        # Frontend agora chama o domínio em HTTPS (Resolve o Mixed Content)
+        - NEXT_PUBLIC_GATEWAY_URL=https://wsolucoes.com
         - NEXT_PUBLIC_FROTAS_PREFIX=/frotas
         - NEXT_PUBLIC_ERH_PREFIX=/erh
         - NEXT_PUBLIC_API_PREFIX=/api/v1
@@ -127,7 +124,7 @@ services:
       - rede_deploy
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_GATEWAY_URL=http://srv752535.hstgr.cloud:9080
+      - NEXT_PUBLIC_GATEWAY_URL=https://wsolucoes.com
       - NEXT_PUBLIC_FROTAS_PREFIX=/frotas
       - NEXT_PUBLIC_ERH_PREFIX=/erh
       - NEXT_PUBLIC_API_PREFIX=/api/v1
