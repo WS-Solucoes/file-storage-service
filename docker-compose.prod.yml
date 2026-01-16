@@ -105,6 +105,7 @@ services:
       - "traefik.http.routers.ws-gateway.tls=true"
       - "traefik.http.routers.ws-gateway.tls.certresolver=letsencrypt"
       - "traefik.http.services.ws-gateway.loadbalancer.server.port=9080"
+      - "traefik.http.routers.ws-gateway.priority=100"
 
   frontend:
     build:
