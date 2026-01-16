@@ -16,7 +16,7 @@ services:
     networks:
       - ws_network
     ports:
-      - "9876:9876" # Eureka: http://srv752535.hstgr.cloud:9876
+      - "9876:9876"
     environment:
       DISCOVERY_SERVER_PORT: 9876
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
@@ -36,7 +36,7 @@ services:
       COMMON_SERVER_PORT: 9081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/frotas
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_PASSWORD: oCV36=?CT97
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
       COMMON_ALLOWED_ORIGINS: "https://wsolucoes.com,http://srv752535.hstgr.cloud:9080,http://srv752535.hstgr.cloud:3000"
       SPRING_CLOUD_CLIENT_HOSTNAME: common
@@ -57,7 +57,7 @@ services:
       EFROTAS_SERVER_PORT: 9082
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/frotas
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_PASSWORD: oCV36=?CT97
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
       EFROTAS_ALLOWED_ORIGINS: "https://wsolucoes.com,http://srv752535.hstgr.cloud:9080,http://srv752535.hstgr.cloud:3000"
       SPRING_CLOUD_CLIENT_HOSTNAME: efrotas-api-v2
@@ -76,10 +76,18 @@ services:
       - "9083:9083"
     environment:
       - ERH_SERVER_PORT=9083
+      - DB_HOST=postgres
+      - DB_USER=postgres
+      - DB_PASS=oCV36=?CT97
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/frotas
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=oCV36=?CT97
+      - SPRING_DATASOURCE_ERH_URL=jdbc:postgresql://postgres:5432/erh
       - EUREKA_SERVER_URL=http://service-discovery:9876/eureka
       - ERH_ALLOWED_ORIGINS=https://wsolucoes.com,http://srv752535.hstgr.cloud:9080,http://srv752535.hstgr.cloud:3000
       - SPRING_CLOUD_CLIENT_HOSTNAME=erh-api
       - EUREKA_INSTANCE_HOSTNAME=erh-api
+      # IMPORTANTE: Re-adicionando os JAVA_OPTS que configuram os dois bancos
       - 'JAVA_OPTS=-Dspring.datasource.url=jdbc:postgresql://postgres:5432/frotas -Dspring.datasource.username=postgres -Dspring.datasource.password=oCV36=?CT97 -Dspring.datasource.erh.url=jdbc:postgresql://postgres:5432/erh -Dspring.datasource.erh.username=postgres -Dspring.datasource.erh.password=oCV36=?CT97'
 
   api-gateway:
@@ -92,7 +100,7 @@ services:
       - ws_network
       - rede_deploy
     ports:
-      - "9080:9080" # Gateway no IP: http://srv752535.hstgr.cloud:9080
+      - "9080:9080"
     environment:
       API_GATEWAY_PORT: 9080
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
@@ -100,7 +108,7 @@ services:
       SPRING_CLOUD_CLIENT_HOSTNAME: api-gateway
       EUREKA_INSTANCE_HOSTNAME: api-gateway
     labels:
-      - "traefik.enable=false" # Desativado no domínio para evitar conflito com 404
+      - "traefik.enable=false"
 
   frontend:
     build:
