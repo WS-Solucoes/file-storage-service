@@ -98,8 +98,12 @@ services:
       EUREKA_INSTANCE_HOSTNAME: api-gateway
     labels:
       - "traefik.enable=true"
-      # O Gateway agora captura todas as rotas de API em HTTPS
-      - "traefik.http.routers.ws-gateway.rule=Host(`wsolucoes.com`) && PathPrefix(`/api`, `/frotas`, `/erh`, `/common`)"
+      # SOLUÇÃO 1: Especifique a rede para o Traefik não se perder
+      - "traefik.docker.network=rede_deploy"
+      
+      # SOLUÇÃO 2: Sintaxe mais robusta para múltiplos prefixos
+      - "traefik.http.routers.ws-gateway.rule=Host(`wsolucoes.com`) && (PathPrefix(`/api`) || PathPrefix(`/frotas`) || PathPrefix(`/erh`) || PathPrefix(`/common`))"
+      
       - "traefik.http.routers.ws-gateway.entrypoints=websecure"
       - "traefik.http.routers.ws-gateway.tls=true"
       - "traefik.http.routers.ws-gateway.tls.certresolver=letsencrypt"
