@@ -138,3 +138,4 @@ services:
       - "traefik.http.routers.ws-frontend.tls=true"
       - "traefik.http.routers.ws-frontend.tls.certresolver=letsencrypt"
       - "traefik.http.services.ws-frontend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.ws-frontend.priority=1"
