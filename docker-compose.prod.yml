@@ -135,9 +135,26 @@ services:
       - NEXT_PUBLIC_AUTH_PREFIX=/api/auth
     labels:
       - "traefik.enable=true"
+      
+      # 1. A regra continua aceitando os dois para poder "capturar" o acesso errado
       - "traefik.http.routers.ws-frontend.rule=Host(`wsolucoes.com`) || Host(`www.wsolucoes.com`)"
       - "traefik.http.routers.ws-frontend.entrypoints=websecure"
       - "traefik.http.routers.ws-frontend.tls=true"
       - "traefik.http.routers.ws-frontend.tls.certresolver=letsencrypt"
+
+      # --- INÍCIO DA MÁGICA DE REDIRECIONAMENTO ---
+      # Definimos um middleware chamado 'force-non-www'
+      # Regex: Procura por http ou https + www.wsolucoes.com + qualquer coisa depois da barra
+      - "traefik.http.middlewares.force-non-www.redirectregex.regex=^https?://www\\.wsolucoes\\.com/(.*)"
+      
+      # Replacement: Substitui por https://wsolucoes.com + o que tinha depois da barra
+      # NOTA: O $$ é obrigatório no docker-compose para escapar o cifrão.
+      - "traefik.http.middlewares.force-non-www.redirectregex.replacement=https://wsolucoes.com/$${1}"
+      - "traefik.http.middlewares.force-non-www.redirectregex.permanent=true"
+
+      # Ativamos o middleware neste roteador
+      - "traefik.http.routers.ws-frontend.middlewares=force-non-www"
+      # --- FIM DA MÁGICA ---
+
       - "traefik.http.services.ws-frontend.loadbalancer.server.port=3000"
       - "traefik.http.routers.ws-frontend.priority=1"
