@@ -26,5 +26,35 @@ replay_pid*
 
 .env
 
+# Maven
 **/build/
 **/target/
+.m2/
+**/.m2/
+
+# Node.js
+node_modules/
+**/node_modules/
+*.tsbuildinfo
+dist/
+**/dist/
+.next/
+**/next/out/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
