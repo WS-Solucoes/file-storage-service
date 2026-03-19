@@ -4,8 +4,8 @@ networks:
   ws_network:
     driver: bridge
 
-# volumes:
-#   postgres_data:
+volumes:
+  minio_data:
 
 services:
   # postgres:
@@ -37,7 +37,19 @@ services:
     environment:
       DISCOVERY_SERVER_PORT: 9876
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
-    
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    networks:
+      - ws_network
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
 
   common:
     build:
@@ -101,8 +113,94 @@ services:
       SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://srv752535.hstgr.cloud:5432/frotas
       SPRING_DATASOURCE_ERH_HIKARI_JDBC_URL: jdbc:postgresql://srv752535.hstgr.cloud:5432/erh
       EUREKA_SERVER_URL: http://service-discovery:9876/eureka
+      ERH_STORAGE_TYPE: REMOTE
+      FILE_STORAGE_SERVICE_URL: http://file-storage:9085
+      PROCESSOS_SERVICE_URL: http://processos-api:9084
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
     depends_on:
       - common
+      - file-storage
+      - rabbitmq
+
+  processos-api:
+    build:
+      context: .
+      dockerfile: processos-service/Dockerfile
+    container_name: processos-api
+    restart: unless-stopped
+    networks:
+      - ws_network
+    ports:
+      - "9084:9084"
+    environment:
+      PROCESSOS_SERVER_PORT: 9084
+      SPRING_DATASOURCE_URL: jdbc:postgresql://srv752535.hstgr.cloud:5432/erh
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://srv752535.hstgr.cloud:5432/erh
+      EUREKA_SERVER_URL: http://service-discovery:9876/eureka
+      FILE_STORAGE_SERVICE_URL: http://file-storage:9085
+      PROCESSOS_ERH_SERVICE_URL: http://erh-api:9083
+      PROCESSOS_DEMO_SEED_ENABLED: "true"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+    depends_on:
+      - service-discovery
+      - file-storage
+      - erh-api
+      - rabbitmq
+
+  # ==================== MinIO (S3 Storage) ====================
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    networks:
+      - ws_network
+    ports:
+      - "9000:9000"   # API S3
+      - "9001:9001"   # Console Web
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== File Storage Service ====================
+  file-storage:
+    build:
+      context: .
+      dockerfile: file-storage-service/Dockerfile
+    container_name: file-storage
+    restart: unless-stopped
+    networks:
+      - ws_network
+    ports:
+      - "9085:9085"
+    environment:
+      FILE_STORAGE_PORT: 9085
+      STORAGE_TYPE: MINIO
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET: ws-documentos
+      EUREKA_SERVER_URL: http://service-discovery:9876/eureka
+    depends_on:
+      minio:
+        condition: service_healthy
+      service-discovery:
+        condition: service_started
 
   api-gateway:
     build:
@@ -121,12 +219,21 @@ services:
     depends_on:
       - efrotas-api
       - erh-api
+      - processos-api
       - common
+      - file-storage
 
   frontend:
     build:
       context: ./frontend-services
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:9080}
+        NEXT_PUBLIC_FROTAS_PREFIX: ${NEXT_PUBLIC_FROTAS_PREFIX:-/frotas}
+        NEXT_PUBLIC_ERH_PREFIX: ${NEXT_PUBLIC_ERH_PREFIX:-/erh}
+        NEXT_PUBLIC_PROCESSOS_PREFIX: ${NEXT_PUBLIC_PROCESSOS_PREFIX:-/processos}
+        NEXT_PUBLIC_API_PREFIX: ${NEXT_PUBLIC_API_PREFIX:-/api/v1}
+        NEXT_PUBLIC_AUTH_PREFIX: ${NEXT_PUBLIC_AUTH_PREFIX:-/api/auth}
     container_name: frontend
     restart: unless-stopped
     networks:
@@ -138,6 +245,7 @@ services:
       NEXT_PUBLIC_GATEWAY_URL: http://host.docker.internal:9080
       NEXT_PUBLIC_FROTAS_PREFIX: /frotas
       NEXT_PUBLIC_ERH_PREFIX: /erh
+      NEXT_PUBLIC_PROCESSOS_PREFIX: /processos
       NEXT_PUBLIC_API_PREFIX: /api/v1
       NEXT_PUBLIC_AUTH_PREFIX: /api/auth
     extra_hosts:

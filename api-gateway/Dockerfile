@@ -6,6 +6,8 @@ COPY pom.xml ./
 COPY common/pom.xml common/pom.xml
 COPY eFrotas/pom.xml eFrotas/pom.xml
 COPY eRH-Service/pom.xml eRH-Service/pom.xml
+COPY processos-service/pom.xml processos-service/pom.xml
+COPY file-storage-service/pom.xml file-storage-service/pom.xml
 COPY api-gateway/pom.xml api-gateway/pom.xml
 COPY service-discovery/pom.xml service-discovery/pom.xml
 

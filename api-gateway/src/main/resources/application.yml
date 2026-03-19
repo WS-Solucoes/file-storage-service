@@ -1,9 +1,13 @@
 server:
   port: ${API_GATEWAY_PORT:8080}
+  netty:
+    max-initial-line-length: 65536
 
 spring:
   application:
     name: api-gateway
+  codec:
+    max-in-memory-size: 200MB
   main:
     web-application-type: reactive
   cloud:
@@ -42,10 +46,28 @@ spring:
             - Path=/frotas/**
           filters:
             - StripPrefix=1
+        - id: processos-service
+          uri: lb://processos-service
+          predicates:
+            - Path=/processos/**
+          filters:
+            - StripPrefix=1
+        - id: processos-service-erh-alias
+          uri: lb://processos-service
+          predicates:
+            - Path=/erh/api/v1/processo,/erh/api/v1/processo/**
+          filters:
+            - StripPrefix=1
         - id: erh-service
           uri: lb://erh-service
           predicates:
             - Path=/erh/**
+          filters:
+            - StripPrefix=1
+        - id: file-storage-service
+          uri: lb://file-storage-service
+          predicates:
+            - Path=/storage/**
           filters:
             - StripPrefix=1
       globalcors:

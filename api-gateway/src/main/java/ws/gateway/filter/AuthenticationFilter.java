@@ -28,6 +28,12 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     private static final List<String> PUBLIC_UNIDADE_GESTORA_PATTERNS = List.of(
             "/common/api/v1/unidadeGestora/**",
             "/common/api/v1/unidadeGestora/municipio/**");
+    private static final List<String> PUBLIC_PORTAL_PATTERNS = List.of(
+            "/erh/api/v1/portal/auth/**",
+            "/processos/api/v1/processo/portal/**",
+            "/processos/api/v1/processo/catalogo/**",
+            "/erh/api/v1/processo/portal/**",
+            "/erh/api/v1/processo/catalogo/**");
 
     private final WebClient authClient;
 
@@ -96,7 +102,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     /** Identifica o módulo (ERH ou FROTAS) baseado no path da requisição */
     private String identificarModulo(String path) {
-        if (path.startsWith("/erh") || path.startsWith("/e-rh")) {
+        if (path.startsWith("/erh") || path.startsWith("/e-rh") || path.startsWith("/processos")) {
             return "ERH";
         } else if (path.startsWith("/frotas") || path.startsWith("/e-frotas")) {
             return "FROTAS";
@@ -106,6 +112,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     private boolean isUnsecuredPath(String path) {
         return unsecuredPatterns.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path))
-                || PUBLIC_UNIDADE_GESTORA_PATTERNS.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
+                || PUBLIC_UNIDADE_GESTORA_PATTERNS.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path))
+                || PUBLIC_PORTAL_PATTERNS.stream().anyMatch(pattern -> PATH_MATCHER.match(pattern, path));
     }
 }
