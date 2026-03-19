@@ -10,3 +10,9 @@
 [submodule "common"]
 	path = common
 	url = https://github.com/WS-Solucoes/common.git
+[submodule "processos-service"]
+	path = processos-service
+	url = https://github.com/WS-Solucoes/processos-service.git
+[submodule "file-storage-service"]
+	path = file-storage-service
+	url = https://github.com/WS-Solucoes/file-storage-service.git
