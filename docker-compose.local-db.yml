@@ -1,0 +1,40 @@
+services:
+  common:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/frotas
+      SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://host.docker.internal:5432/frotas
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  efrotas-api:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/frotas
+      SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://host.docker.internal:5432/frotas
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  erh-api:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/frotas
+      SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://host.docker.internal:5432/frotas
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_ERH_URL: jdbc:postgresql://host.docker.internal:5432/erh
+      SPRING_DATASOURCE_ERH_HIKARI_JDBC_URL: jdbc:postgresql://host.docker.internal:5432/erh
+      SPRING_DATASOURCE_ERH_USERNAME: postgres
+      SPRING_DATASOURCE_ERH_PASSWORD: postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  processos-api:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/erh
+      SPRING_DATASOURCE_HIKARI_JDBC_URL: jdbc:postgresql://host.docker.internal:5432/erh
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

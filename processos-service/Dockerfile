@@ -11,19 +11,19 @@ COPY file-storage-service/pom.xml file-storage-service/pom.xml
 COPY api-gateway/pom.xml api-gateway/pom.xml
 COPY service-discovery/pom.xml service-discovery/pom.xml
 
-RUN mvn -pl service-discovery -am dependency:go-offline
+RUN mvn -pl processos-service -am dependency:go-offline
 
 COPY common/src common/src
-COPY service-discovery/src service-discovery/src
+COPY processos-service/src processos-service/src
 
-RUN mvn -pl service-discovery -am clean package -DskipTests
+RUN mvn -pl processos-service -am clean package -DskipTests
 
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-COPY --from=builder /workspace/service-discovery/target/*-exec.jar app.jar
+COPY --from=builder /workspace/processos-service/target/*-exec.jar app.jar
 
-EXPOSE 9876
+EXPOSE 9084
 
 CMD ["java", "-jar", "app.jar"]
